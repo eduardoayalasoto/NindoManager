@@ -35,7 +35,17 @@ if ".up.railway.app" not in _parsed_allowed_hosts:
     _parsed_allowed_hosts.append(".up.railway.app")
 
 ALLOWED_HOSTS = _parsed_allowed_hosts
-CSRF_TRUSTED_ORIGINS = ["https://{0}".format(host.lstrip(".")) for host in ALLOWED_HOSTS if host]
+
+_csrf_trusted_origins = []
+for host in ALLOWED_HOSTS:
+    clean_host = (host or "").strip()
+    if not clean_host:
+        continue
+    if clean_host.startswith("."):
+        _csrf_trusted_origins.append("https://*{0}".format(clean_host))
+    else:
+        _csrf_trusted_origins.append("https://{0}".format(clean_host))
+CSRF_TRUSTED_ORIGINS = _csrf_trusted_origins
 
 # -------------------------------------------------------------------
 # DATABASE
