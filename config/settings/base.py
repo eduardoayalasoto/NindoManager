@@ -126,6 +126,15 @@ LOGOUT_REDIRECT_URL = "/usuarios/login/"
 # Email defaults
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@nindocombat.com")
 
-# WhatsApp
+# WhatsApp — provider abstraction
+# Options: "console" (dev), "meta" (Meta Cloud API), "twilio"
+WHATSAPP_PROVIDER = config("WHATSAPP_PROVIDER", default="console")
+
+# Meta Cloud API
 WHATSAPP_API_TOKEN = config("WHATSAPP_API_TOKEN", default="")
 WHATSAPP_PHONE_NUMBER_ID = config("WHATSAPP_PHONE_NUMBER_ID", default="")
+
+# Twilio
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
+TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM", default="")
