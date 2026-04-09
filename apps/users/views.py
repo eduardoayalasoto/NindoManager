@@ -2,6 +2,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordResetView
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import UpdateView, ListView, DetailView, CreateView
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -82,7 +83,7 @@ class UserCreateView(AdminRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class UserToggleActiveView(AdminRequiredMixin, LoginRequiredMixin):
+class UserToggleActiveView(AdminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         user = User.objects.get(pk=pk)
         user.is_active = not user.is_active
