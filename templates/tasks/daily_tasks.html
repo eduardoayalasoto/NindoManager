@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Tareas del día - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-black">Tareas del día</h1>
+      <p class="text-gray-500 text-sm">{{ selected_date|date:"l, j \d\e F \d\e Y" }}</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <!-- Date nav -->
+      <a href="?date={{ selected_date|date:'Y-m-d' }}&{% if request.GET.branch %}branch={{ request.GET.branch }}{% endif %}"
+         class="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
+        Hoy
+      </a>
+      <form method="get" class="flex gap-2">
+        <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+               class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black">
+        {% if request.GET.branch %}<input type="hidden" name="branch" value="{{ request.GET.branch }}">{% endif %}
+        <button type="submit" class="px-3 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Ir</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap gap-3">
+    <select name="branch" onchange="this.form.submit()" form="filter-form"
+            class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black">
+      <option value="">Todas las sucursales</option>
+      {% for branch in branches %}
+      <option value="{{ branch.pk }}" {% if request.GET.branch == branch.pk|stringformat:'s' %}selected{% endif %}>
+        {{ branch.name }}
+      </option>
+      {% endfor %}
+    </select>
+    <form id="filter-form" method="get">
+      <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+    </form>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+    {% for key, label, color in stats|items %}
+    {% endfor %}
+    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-black">{{ stats.total }}</div>
+      <div class="text-xs text-gray-500 mt-1">Total</div>
+    </div>
+    <div class="bg-white border border-green-100 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-green-600">{{ stats.completada }}</div>
+      <div class="text-xs text-gray-500 mt-1">Completadas</div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-gray-600">{{ stats.pendiente }}</div>
+      <div class="text-xs text-gray-500 mt-1">Pendientes</div>
+    </div>
+    <div class="bg-white border border-blue-100 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-blue-600">{{ stats.en_progreso }}</div>
+      <div class="text-xs text-gray-500 mt-1">En progreso</div>
+    </div>
+    <div class="bg-white border border-red-100 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-red-600">{{ stats.retrasada }}</div>
+      <div class="text-xs text-gray-500 mt-1">Retrasadas</div>
+    </div>
+  </div>
+
+  <!-- Task list -->
+  <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+      <h2 class="font-semibold text-black">Instancias de tareas</h2>
+      <form method="post" action="{% url 'tasks:generate_today' %}">
+        {% csrf_token %}
+        <button class="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-red-600 transition-colors">
+          + Generar instancias
+        </button>
+      </form>
+    </div>
+
+    <div class="divide-y divide-gray-50">
+      {% for instance in instances %}
+      <div class="px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
+        <!-- Status indicator -->
+        <div class="flex-shrink-0">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full
+            {% if instance.status == 'completada' %}bg-green-100 text-green-600
+            {% elif instance.status == 'en_progreso' %}bg-blue-100 text-blue-600
+            {% elif instance.status == 'retrasada' %}bg-red-100 text-red-600
+            {% else %}bg-gray-100 text-gray-500{% endif %}">
+            {% if instance.status == 'completada' %}
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {% elif instance.status == 'en_progreso' %}
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {% elif instance.status == 'retrasada' %}
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            {% else %}
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            {% endif %}
+          </span>
+        </div>
+
+        <!-- Task info -->
+        <div class="flex-1 min-w-0">
+          <a href="{% url 'tasks:instance_detail' pk=instance.pk %}" class="font-medium text-black hover:text-red-600 transition-colors">
+            {{ instance.task.title }}
+          </a>
+          <div class="flex items-center gap-3 mt-1 flex-wrap">
+            <span class="text-xs text-gray-400">{{ instance.branch.name }}</span>
+            {% if instance.task.module %}
+            <span class="text-xs text-gray-400">· {{ instance.task.module.name }}</span>
+            {% endif %}
+            {% if instance.assigned_to %}
+            <span class="text-xs text-gray-400">· {{ instance.assigned_to }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Priority badge -->
+        <span class="text-xs px-2 py-1 rounded-full border flex-shrink-0
+          {% if instance.task.priority == 'alta' %}border-red-200 text-red-700 bg-red-50
+          {% elif instance.task.priority == 'media' %}border-yellow-200 text-yellow-700 bg-yellow-50
+          {% else %}border-gray-200 text-gray-500 bg-gray-50{% endif %}">
+          {{ instance.task.get_priority_display }}
+        </span>
+
+        <!-- Actions -->
+        <div class="flex gap-2 flex-shrink-0">
+          {% if instance.status == 'pendiente' %}
+          <form method="post" action="{% url 'tasks:instance_start' pk=instance.pk %}">
+            {% csrf_token %}
+            <button class="px-3 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-blue-600 transition-colors">
+              Iniciar
+            </button>
+          </form>
+          {% elif instance.status == 'en_progreso' %}
+          <form method="post" action="{% url 'tasks:instance_complete' pk=instance.pk %}" x-data="{ open: false }">
+            {% csrf_token %}
+            <button type="submit" class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors">
+              Completar
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="py-16 text-center">
+        <svg class="h-12 w-12 text-gray-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <p class="text-gray-400 text-sm">No hay tareas para este día.</p>
+        <form method="post" action="{% url 'tasks:generate_today' %}" class="mt-4">
+          {% csrf_token %}
+          <button class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+            Generar instancias de hoy
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

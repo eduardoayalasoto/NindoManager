@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }} - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <a href="{% url 'tasks:list' %}" class="text-sm text-gray-500 hover:text-black">← Volver a tareas</a>
+    <div class="flex items-center justify-between mt-2">
+      <h1 class="text-2xl font-bold text-black">{{ task.title }}</h1>
+      <div class="flex gap-2">
+        <a href="{% url 'tasks:update' pk=task.pk %}" class="px-3 py-1.5 border border-gray-200 text-sm rounded-lg hover:bg-gray-50">Editar</a>
+        <a href="{% url 'tasks:delete' pk=task.pk %}" class="px-3 py-1.5 bg-red-50 text-red-600 text-sm rounded-lg hover:bg-red-100">Eliminar</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-5 grid grid-cols-2 gap-4 text-sm">
+    <div><span class="text-gray-400">Sucursal</span><p class="font-medium text-black mt-0.5">{{ task.branch.name }}</p></div>
+    <div><span class="text-gray-400">Módulo</span><p class="font-medium text-black mt-0.5">{{ task.module|default:"-" }}</p></div>
+    <div><span class="text-gray-400">Prioridad</span><p class="font-medium text-black mt-0.5">{{ task.get_priority_display }}</p></div>
+    <div><span class="text-gray-400">Duración estimada</span><p class="font-medium text-black mt-0.5">{{ task.estimated_duration }} min</p></div>
+    <div><span class="text-gray-400">Asignado a</span><p class="font-medium text-black mt-0.5">{{ task.assigned_to|default:"Sin asignar" }}</p></div>
+    <div><span class="text-gray-400">Estado</span><p class="font-medium text-black mt-0.5">{{ task.get_status_display }}</p></div>
+    {% if task.is_recurring %}
+    <div class="col-span-2">
+      <span class="text-gray-400">Días de recurrencia</span>
+      <p class="font-medium text-black mt-0.5">{{ task.get_recurring_days_display|join:", " }}</p>
+    </div>
+    {% endif %}
+    {% if task.description %}
+    <div class="col-span-2">
+      <span class="text-gray-400">Descripción</span>
+      <p class="text-black mt-1">{{ task.description }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if checklist_items %}
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-semibold text-black mb-3">Checklist</h2>
+    <ul class="space-y-2">
+      {% for item in checklist_items %}
+      <li class="flex items-center gap-2 text-sm text-black">
+        <span class="w-1.5 h-1.5 rounded-full bg-black flex-shrink-0"></span>
+        {{ item.item }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if recent_instances %}
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-semibold text-black mb-3">Instancias recientes</h2>
+    <div class="space-y-2">
+      {% for instance in recent_instances %}
+      <div class="flex items-center justify-between py-2 border-b border-gray-50">
+        <span class="text-sm text-black">{{ instance.due_date|date:"d/m/Y" }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full
+          {% if instance.status == 'completada' %}bg-green-100 text-green-700
+          {% elif instance.status == 'retrasada' %}bg-red-100 text-red-700
+          {% else %}bg-gray-100 text-gray-600{% endif %}">
+          {{ instance.get_status_display }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

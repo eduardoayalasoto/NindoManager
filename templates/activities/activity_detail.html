@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Actividad - Nindo Manager{% endblock %}
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <a href="{% url 'activities:list' %}" class="text-sm text-gray-500 hover:text-black">← Actividades</a>
+    <h1 class="text-2xl font-bold text-black mt-2">Detalle de actividad</h1>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-5 grid grid-cols-2 gap-4 text-sm">
+    <div><span class="text-gray-400">Fecha</span><p class="font-medium text-black">{{ activity.timestamp|date:"d/m/Y H:i:s" }}</p></div>
+    <div><span class="text-gray-400">Usuario</span><p class="font-medium text-black">{{ activity.user }}</p></div>
+    <div><span class="text-gray-400">Acción</span><p class="font-medium text-black">{{ activity.get_action_display }}</p></div>
+    <div><span class="text-gray-400">Tipo</span><p class="font-medium text-black">{{ activity.content_type }}</p></div>
+    <div><span class="text-gray-400">Sucursal</span><p class="font-medium text-black">{{ activity.branch|default:"-" }}</p></div>
+    <div><span class="text-gray-400">IP</span><p class="font-medium text-black">{{ activity.ip_address|default:"-" }}</p></div>
+    <div class="col-span-2"><span class="text-gray-400">Descripción</span><p class="text-black mt-1">{{ activity.description }}</p></div>
+    {% if activity.old_values %}
+    <div class="col-span-2"><span class="text-gray-400">Valores anteriores</span><pre class="text-xs bg-gray-50 p-3 rounded mt-1 overflow-auto">{{ activity.old_values }}</pre></div>
+    {% endif %}
+    {% if activity.new_values %}
+    <div class="col-span-2"><span class="text-gray-400">Valores nuevos</span><pre class="text-xs bg-gray-50 p-3 rounded mt-1 overflow-auto">{{ activity.new_values }}</pre></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+# Migrate DB, collect static, then start server.
+# load_initial_data runs only if branches don't exist yet (idempotent).
+startCommand = """
+python manage.py migrate --noinput && \
+python manage.py collectstatic --noinput && \
+python manage.py load_initial_data && \
+gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+"""
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[environments.production.variables]
+DJANGO_SETTINGS_MODULE = "config.settings.production"
+# DATABASE_URL = "sqlite:////mnt/data/db.sqlite3"  ← set in Railway dashboard
