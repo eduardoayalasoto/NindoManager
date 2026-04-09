@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Sucursales - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-black">Sucursales</h1>
+    {% if user.is_staff or user.is_superuser %}
+    <a href="{% url 'branches:create' %}" class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+      + Nueva sucursal
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for branch in branches %}
+    {% with stats=branch.get_task_stats_today %}
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-semibold text-black text-lg">{{ branch.name }}</h2>
+          <span class="text-xs text-gray-400">{{ branch.code }}</span>
+        </div>
+        <span class="text-2xl font-black text-gray-100">{{ branch.code }}</span>
+      </div>
+
+      {% if branch.address %}
+      <p class="text-xs text-gray-500 mb-4">{{ branch.address }}</p>
+      {% endif %}
+
+      <div class="grid grid-cols-3 gap-2 text-center border-t border-gray-50 pt-4">
+        <div>
+          <div class="text-xl font-bold text-green-600">{{ stats.completed }}</div>
+          <div class="text-xs text-gray-400">Completadas</div>
+        </div>
+        <div>
+          <div class="text-xl font-bold text-gray-600">{{ stats.pending }}</div>
+          <div class="text-xs text-gray-400">Pendientes</div>
+        </div>
+        <div>
+          <div class="text-xl font-bold text-red-600">{{ stats.overdue }}</div>
+          <div class="text-xs text-gray-400">Retrasadas</div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <a href="{% url 'branches:detail' pk=branch.pk %}" class="flex-1 text-center py-2 bg-black text-white text-xs rounded-lg hover:bg-red-600 transition-colors">
+          Ver detalle
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'branches:update' pk=branch.pk %}" class="px-3 py-2 border border-gray-200 text-xs rounded-lg hover:bg-gray-50">
+          Editar
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="col-span-3 py-16 text-center text-gray-400">
+      No hay sucursales configuradas.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

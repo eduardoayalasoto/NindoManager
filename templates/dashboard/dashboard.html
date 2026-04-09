@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-black">Dashboard</h1>
+      <p class="text-gray-500 text-sm">{{ today|date:"l, j \d\e F \d\e Y" }}</p>
+    </div>
+    <div class="flex gap-2">
+      <form method="post" action="{% url 'tasks:generate_today' %}">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+          Generar tareas de hoy
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-gray-500">Total</p>
+      <p class="text-3xl font-bold text-black mt-1">{{ stats.total }}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-gray-500">Completadas</p>
+      <p class="text-3xl font-bold text-green-600 mt-1">{{ stats.completada }}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-gray-500">Pendientes</p>
+      <p class="text-3xl font-bold text-gray-600 mt-1">{{ stats.pendiente }}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-gray-500">En progreso</p>
+      <p class="text-3xl font-bold text-blue-600 mt-1">{{ stats.en_progreso }}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <p class="text-sm text-gray-500">Retrasadas</p>
+      <p class="text-3xl font-bold text-red-600 mt-1">{{ stats.retrasada }}</p>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  {% if stats.total > 0 %}
+  <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-sm font-medium text-black">Progreso del día</span>
+      <span class="text-sm text-gray-500">
+        {% widthratio stats.completada stats.total 100 %}% completado
+      </span>
+    </div>
+    <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div class="h-full bg-black rounded-full transition-all duration-500"
+           style="width: {% widthratio stats.completada stats.total 100 %}%"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent tasks -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="font-semibold text-black">Tareas de hoy</h2>
+        <a href="{% url 'tasks:daily' %}" class="text-xs text-red-600 hover:underline">Ver todas</a>
+      </div>
+      <div class="divide-y divide-gray-50">
+        {% for instance in recent_instances %}
+        <div class="px-5 py-3 flex items-center gap-3">
+          <span class="w-2 h-2 rounded-full flex-shrink-0
+            {% if instance.status == 'completada' %}bg-green-500
+            {% elif instance.status == 'en_progreso' %}bg-blue-500
+            {% elif instance.status == 'retrasada' %}bg-red-600
+            {% else %}bg-gray-300{% endif %}"></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-black truncate">{{ instance.task.title }}</p>
+            <p class="text-xs text-gray-400">{{ instance.branch.name }}</p>
+          </div>
+          <span class="text-xs px-2 py-1 rounded-full border
+            {% if instance.task.priority == 'alta' %}border-red-200 text-red-700 bg-red-50
+            {% elif instance.task.priority == 'media' %}border-yellow-200 text-yellow-700 bg-yellow-50
+            {% else %}border-gray-200 text-gray-500{% endif %}">
+            {{ instance.task.get_priority_display }}
+          </span>
+        </div>
+        {% empty %}
+        <div class="px-5 py-8 text-center text-gray-400 text-sm">
+          No hay tareas para hoy. <a href="{% url 'tasks:generate_today' %}" class="text-red-600 hover:underline">Generar tareas</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="font-semibold text-black">Actividad reciente</h2>
+        <a href="{% url 'activities:list' %}" class="text-xs text-red-600 hover:underline">Ver todo</a>
+      </div>
+      <div class="divide-y divide-gray-50">
+        {% for activity in recent_activities %}
+        <div class="px-5 py-3">
+          <div class="flex items-start gap-3">
+            <div class="h-7 w-7 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {{ activity.user.first_name|first|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-black">
+                <span class="font-medium">{{ activity.user }}</span>
+                <span class="text-gray-500"> {{ activity.get_action_display|lower }}</span>
+                <span class="text-gray-500"> {{ activity.content_type|lower }}</span>
+              </p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ activity.timestamp|timesince }} ago</p>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="px-5 py-8 text-center text-gray-400 text-sm">Sin actividad reciente.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Branches summary -->
+  {% if branches.count > 1 %}
+  <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-black">Resumen por sucursal</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
+      {% for branch in branches %}
+      {% with stats=branch.get_task_stats_today %}
+      <div class="border border-gray-100 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-medium text-black">{{ branch.name }}</h3>
+          <span class="text-xs bg-black text-white px-2 py-1 rounded-full">{{ branch.code }}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <div class="text-lg font-bold text-green-600">{{ stats.completed }}</div>
+            <div class="text-gray-400">Completadas</div>
+          </div>
+          <div>
+            <div class="text-lg font-bold text-gray-600">{{ stats.pending }}</div>
+            <div class="text-gray-400">Pendientes</div>
+          </div>
+          <div>
+            <div class="text-lg font-bold text-red-600">{{ stats.overdue }}</div>
+            <div class="text-gray-400">Retrasadas</div>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

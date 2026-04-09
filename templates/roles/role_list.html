@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Roles - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-black">Roles y permisos</h1>
+    <a href="{% url 'roles:create' %}" class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+      + Nuevo rol
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for role in roles %}
+    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-black">{{ role.name }}</h2>
+        <div class="flex gap-2">
+          <a href="{% url 'roles:update' pk=role.pk %}" class="text-xs text-gray-500 hover:text-black">Editar</a>
+          <a href="{% url 'roles:delete' pk=role.pk %}" class="text-xs text-red-500 hover:text-red-700">Eliminar</a>
+        </div>
+      </div>
+      {% if role.description %}
+      <p class="text-sm text-gray-500 mb-3">{{ role.description }}</p>
+      {% endif %}
+      <div class="flex flex-wrap gap-1">
+        {% if role.can_manage_users %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Gestión usuarios</span>{% endif %}
+        {% if role.can_manage_branches %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Gestión sucursales</span>{% endif %}
+        {% if role.can_manage_tasks %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Gestión tareas</span>{% endif %}
+        {% if role.can_view_all_branches %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Ver todas las sucursales</span>{% endif %}
+        {% if role.can_view_reports %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Ver reportes</span>{% endif %}
+        {% if role.can_view_activities %}<span class="text-xs bg-gray-100 px-2 py-0.5 rounded">Ver actividades</span>{% endif %}
+      </div>
+      <p class="text-xs text-gray-400 mt-3">
+        {{ role.user_roles.filter.count }} usuarios asignados
+      </p>
+    </div>
+    {% empty %}
+    <div class="col-span-2 py-12 text-center text-gray-400">
+      No hay roles configurados.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

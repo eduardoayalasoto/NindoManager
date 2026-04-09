@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ instance.task.title }} - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+  <div>
+    <a href="{% url 'tasks:daily' %}" class="text-sm text-gray-500 hover:text-black">← Volver al día</a>
+    <div class="flex items-center justify-between mt-2">
+      <h1 class="text-2xl font-bold text-black">{{ instance.task.title }}</h1>
+      <span class="px-3 py-1 rounded-full text-sm font-medium
+        {% if instance.status == 'completada' %}bg-green-100 text-green-700
+        {% elif instance.status == 'en_progreso' %}bg-blue-100 text-blue-700
+        {% elif instance.status == 'retrasada' %}bg-red-100 text-red-700
+        {% else %}bg-gray-100 text-gray-700{% endif %}">
+        {{ instance.get_status_display }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="bg-white border border-gray-200 rounded-xl p-5 grid grid-cols-2 gap-4 text-sm">
+    <div>
+      <span class="text-gray-400">Sucursal</span>
+      <p class="font-medium text-black">{{ instance.branch.name }}</p>
+    </div>
+    <div>
+      <span class="text-gray-400">Asignado a</span>
+      <p class="font-medium text-black">{{ instance.assigned_to|default:"Sin asignar" }}</p>
+    </div>
+    <div>
+      <span class="text-gray-400">Prioridad</span>
+      <p class="font-medium text-black">{{ instance.task.get_priority_display }}</p>
+    </div>
+    <div>
+      <span class="text-gray-400">Fecha límite</span>
+      <p class="font-medium text-black">{{ instance.due_date|date:"d/m/Y H:i" }}</p>
+    </div>
+    {% if instance.task.description %}
+    <div class="col-span-2">
+      <span class="text-gray-400">Descripción</span>
+      <p class="text-black mt-1">{{ instance.task.description }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Checklist -->
+  {% if checklist_items %}
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-semibold text-black">Checklist</h2>
+    </div>
+    <div class="divide-y divide-gray-50" id="checklist">
+      {% for item in checklist_items %}
+      <div class="px-5 py-3 flex items-center gap-3" id="checklist-item-{{ item.pk }}">
+        <button onclick="toggleChecklist({{ item.pk }})"
+                class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors
+                  {% if item.is_completed %}bg-black border-black text-white{% else %}border-gray-300 hover:border-black{% endif %}">
+          {% if item.is_completed %}
+          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+          </svg>
+          {% endif %}
+        </button>
+        <span class="text-sm {% if item.is_completed %}line-through text-gray-400{% else %}text-black{% endif %}">
+          {{ item.checklist.item }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-semibold text-black mb-4">Acciones</h2>
+    <div class="flex gap-3 flex-wrap">
+      {% if instance.status == 'pendiente' %}
+      <form method="post" action="{% url 'tasks:instance_start' pk=instance.pk %}">
+        {% csrf_token %}
+        <button class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+          Iniciar tarea
+        </button>
+      </form>
+      {% endif %}
+
+      {% if instance.status in 'pendiente,en_progreso,retrasada' %}
+      <form method="post" action="{% url 'tasks:instance_complete' pk=instance.pk %}" x-data="{ showNotes: false }">
+        {% csrf_token %}
+        <div x-show="showNotes" x-cloak class="mb-3">
+          <textarea name="notes" rows="2" placeholder="Notas opcionales..."
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black"></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" @click="showNotes = !showNotes"
+                  class="px-4 py-2 border border-gray-200 text-sm rounded-lg hover:bg-gray-50">
+            Agregar nota
+          </button>
+          <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+            Marcar completada
+          </button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if instance.notes %}
+    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+      <p class="text-xs text-gray-400 mb-1">Notas:</p>
+      <p class="text-sm text-black">{{ instance.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function toggleChecklist(itemId) {
+  fetch(`/tareas/checklist/${itemId}/toggle/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(r => r.json())
+  .then(data => {
+    location.reload();
+  });
+}
+</script>
+{% endblock %}

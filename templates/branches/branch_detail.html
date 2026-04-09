@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ branch.name }} - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <a href="{% url 'branches:list' %}" class="text-sm text-gray-500 hover:text-black">← Sucursales</a>
+      <h1 class="text-2xl font-bold text-black mt-1">{{ branch.name }}</h1>
+    </div>
+    {% if user.is_staff %}
+    <a href="{% url 'branches:update' pk=branch.pk %}" class="px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Editar</a>
+    {% endif %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Stats -->
+    {% with s=stats %}
+    <div class="bg-white border border-green-100 rounded-xl p-4 text-center">
+      <div class="text-3xl font-bold text-green-600">{{ s.completed }}</div>
+      <div class="text-xs text-gray-400 mt-1">Completadas hoy</div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+      <div class="text-3xl font-bold text-gray-600">{{ s.pending }}</div>
+      <div class="text-xs text-gray-400 mt-1">Pendientes</div>
+    </div>
+    <div class="bg-white border border-red-100 rounded-xl p-4 text-center">
+      <div class="text-3xl font-bold text-red-600">{{ s.overdue }}</div>
+      <div class="text-xs text-gray-400 mt-1">Retrasadas</div>
+    </div>
+    {% endwith %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Info -->
+    <div class="bg-white border border-gray-200 rounded-xl p-5">
+      <h2 class="font-semibold text-black mb-3">Información</h2>
+      <dl class="space-y-2 text-sm">
+        {% if branch.address %}
+        <div><dt class="text-gray-400">Dirección</dt><dd class="text-black">{{ branch.address }}</dd></div>
+        {% endif %}
+        {% if branch.phone %}
+        <div><dt class="text-gray-400">Teléfono</dt><dd class="text-black">{{ branch.phone }}</dd></div>
+        {% endif %}
+        {% if branch.email %}
+        <div><dt class="text-gray-400">Email</dt><dd class="text-black">{{ branch.email }}</dd></div>
+        {% endif %}
+      </dl>
+    </div>
+
+    <!-- Staff -->
+    <div class="bg-white border border-gray-200 rounded-xl p-5">
+      <h2 class="font-semibold text-black mb-3">Personal asignado</h2>
+      {% if staff %}
+      <div class="space-y-2">
+        {% for ur in staff %}
+        <div class="flex items-center gap-3">
+          <div class="h-7 w-7 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
+            {{ ur.user.first_name|first|upper }}
+          </div>
+          <div>
+            <p class="text-sm font-medium text-black">{{ ur.user }}</p>
+            <p class="text-xs text-gray-400">{{ ur.role.name }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-400">Sin personal asignado.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Eliminar rol - Nindo Manager{% endblock %}
+{% block content %}
+<div class="max-w-md">
+  <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <h1 class="text-xl font-bold text-black mb-2">¿Eliminar rol?</h1>
+    <p class="text-gray-600 mb-6">Estás a punto de eliminar el rol <strong>{{ object.name }}</strong>.</p>
+    <form method="post" class="flex gap-3">
+      {% csrf_token %}
+      <button type="submit" class="px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700">Eliminar</button>
+      <a href="{% url 'roles:list' %}" class="px-6 py-2.5 border border-gray-200 text-black rounded-lg hover:bg-gray-50">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

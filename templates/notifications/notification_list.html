@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-black">Notificaciones</h1>
+    <form method="post" action="{% url 'notifications:mark_all_read' %}">
+      {% csrf_token %}
+      <button class="text-sm text-gray-500 hover:text-black">Marcar todas como leídas</button>
+    </form>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="divide-y divide-gray-50">
+      {% for notif in notifications %}
+      <div class="px-5 py-4 flex gap-4 {% if not notif.is_read %}bg-gray-50{% endif %}">
+        <div class="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-xs flex-shrink-0">
+          {% if notif.notification_type == 'task' %}✓{% elif notif.notification_type == 'alert' %}!{% else %}i{% endif %}
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-black">{{ notif.title }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">{{ notif.message }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ notif.created_at|timesince }}</p>
+        </div>
+        {% if not notif.is_read %}
+        <button onclick="markRead({{ notif.pk }}, this)" class="text-xs text-red-600 hover:text-red-800 flex-shrink-0">
+          Leída
+        </button>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="py-16 text-center text-gray-400">Sin notificaciones.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+function markRead(id, btn) {
+  fetch(`/notificaciones/${id}/leer/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+  }).then(() => {
+    btn.closest('div.px-5').classList.remove('bg-gray-50');
+    btn.remove();
+  });
+}
+</script>
+{% endblock %}
