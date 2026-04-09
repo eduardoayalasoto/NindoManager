@@ -1,3 +1,4 @@
+from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -58,7 +59,7 @@ class UserRoleAssignView(AdminRequiredMixin, CreateView):
         return reverse_lazy("users:detail", kwargs={"pk": self.object.user.pk})
 
 
-class UserRoleRevokeView(AdminRequiredMixin, LoginRequiredMixin):
+class UserRoleRevokeView(AdminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         user_role = get_object_or_404(UserRole, pk=pk)
         user_id = user_role.user.pk
