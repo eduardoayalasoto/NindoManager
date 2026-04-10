@@ -96,6 +96,9 @@ else:
     CELERY_TASK_ALWAYS_EAGER = True
 
 # Security
+# Railway/Reverse proxy: trust X-Forwarded-Proto to detect HTTPS correctly.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
