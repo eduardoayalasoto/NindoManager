@@ -215,7 +215,7 @@ RECEPTION_TASKS = [
 
 
 class Command(BaseCommand):
-    help = "Load initial catalog data: branches, roles, task modules, and reception tasks."
+    help = "Load initial catalog data: branches, roles, task modules, reception tasks, and default users."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -241,13 +241,13 @@ class Command(BaseCommand):
         self._load_roles()
         self._load_task_modules()
         self._load_reception_tasks()
+        self._ensure_default_users()
 
         self.stdout.write(self.style.SUCCESS("\n✓ Initial data loaded successfully."))
         self.stdout.write(
             "\nNext steps:\n"
-            "  1. python manage.py createsuperuser\n"
-            "  2. Log in at /usuarios/login/\n"
-            "  3. Assign roles to users via /usuarios/lista/\n"
+            "  1. Log in at /usuarios/login/\n"
+            "  2. Assign roles to users via /usuarios/lista/\n"
         )
 
     def _load_branches(self):
@@ -330,3 +330,41 @@ class Command(BaseCommand):
                             order=order,
                         )
                     self.stdout.write(f"       → {len(checklist)} ítems de checklist agregados")
+
+    def _ensure_default_users(self):
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        default_users = [
+            {
+                "username": "superadmin",
+                "email": "superadmin@nindomanager.local",
+                "password": "12345",
+                "is_superuser": True,
+                "is_staff": True,
+                "is_active": True,
+            },
+            {
+                "username": "admin",
+                "email": "admin@nindomanager.local",
+                "password": "12345",
+                "is_superuser": False,
+                "is_staff": True,
+                "is_active": True,
+            },
+        ]
+
+        for data in default_users:
+            password = data.pop("password")
+            username = data["username"]
+            defaults = dict(data)
+            user, created = User.objects.update_or_create(
+                username=username,
+                defaults=defaults,
+            )
+            user.set_password(password)
+            user.save(update_fields=["password"])
+
+            status = "creado" if created else "actualizado"
+            role = "superusuario" if user.is_superuser else "administrador"
+            self.stdout.write(f"  Usuario '{username}' ({role}): {status}")
