@@ -2,7 +2,10 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
+default_settings = "config.settings.development"
+if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_STATIC_URL"):
+    default_settings = "config.settings.production"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", default_settings)
 
 app = Celery("nindo")
 app.config_from_object("django.conf:settings", namespace="CELERY")
