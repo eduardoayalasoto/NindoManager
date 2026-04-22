@@ -87,8 +87,13 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_IGNORE_PATTERNS = ["CVS", ".*", "*~", "src"]
+# Only expose compiled output directories; src/ contains Tailwind source files
+# that WhiteNoise cannot post-process (Tailwind v4's @import "tailwindcss" is
+# a build-time directive, not a real CSS file reference).
+STATICFILES_DIRS = [
+    ("css", BASE_DIR / "static" / "css"),
+]
+STATICFILES_IGNORE_PATTERNS = ["CVS", ".*", "*~"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
