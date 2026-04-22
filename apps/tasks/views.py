@@ -155,12 +155,13 @@ class DailyTasksView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["selected_date"] = self.selected_date
         ctx["branches"] = self.request.user.get_accessible_branches()
+        qs = self.object_list
         ctx["stats"] = {
-            "total": self.get_queryset().count(),
-            "completada": self.get_queryset().filter(status="completada").count(),
-            "pendiente": self.get_queryset().filter(status="pendiente").count(),
-            "en_progreso": self.get_queryset().filter(status="en_progreso").count(),
-            "retrasada": self.get_queryset().filter(status="retrasada").count(),
+            "total": qs.count(),
+            "completada": qs.filter(status="completada").count(),
+            "pendiente": qs.filter(status="pendiente").count(),
+            "en_progreso": qs.filter(status="en_progreso").count(),
+            "retrasada": qs.filter(status="retrasada").count(),
         }
         return ctx
 
