@@ -18,3 +18,4 @@ pytest-django==4.7.0
 factory-boy==3.3.0
 django-debug-toolbar==4.2.0
 requests==2.31.0
+resend==2.4.0

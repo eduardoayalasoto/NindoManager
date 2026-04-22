@@ -125,6 +125,7 @@ LOGOUT_REDIRECT_URL = "/usuarios/login/"
 
 # Email defaults
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@nindocombat.com")
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
 
 # WhatsApp — provider abstraction
 # Options: "console" (dev), "meta" (Meta Cloud API), "twilio"

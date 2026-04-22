@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Editar {{ profile_user }} - Nindo Manager{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="{% url 'users:list' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-black transition-colors">
+      ← Usuarios
+    </a>
+    <div class="flex items-center gap-4 mt-2">
+      <div class="h-12 w-12 rounded-full bg-black text-white flex items-center justify-center text-lg font-bold shrink-0">
+        {{ profile_user.first_name|first|upper }}{{ profile_user.last_name|first|upper }}
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-black">Editar usuario</h1>
+        <p class="text-sm text-gray-500">@{{ profile_user.username }}</p>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+      <!-- Left: User fields (3 cols) -->
+      <div class="lg:col-span-3 bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-5">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Información del usuario</h2>
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+          <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Name row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">{{ form.first_name.label }}</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+            <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">{{ form.last_name.label }}</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+            <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+          <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Phone row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">{{ form.phone.label }}</label>
+            {{ form.phone }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">{{ form.whatsapp_number.label }}</label>
+            {{ form.whatsapp_number }}
+            {% if form.whatsapp_number.help_text %}
+            <p class="mt-0.5 text-xs text-gray-400">{{ form.whatsapp_number.help_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Toggles -->
+        <div class="pt-1 space-y-3 border-t border-gray-100">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            {{ form.whatsapp_notifications }}
+            <span class="text-sm text-black group-hover:text-gray-700">Activar notificaciones por WhatsApp</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            {{ form.is_active }}
+            <span class="text-sm text-black group-hover:text-gray-700">Usuario activo</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Right: Roles & Branches (2 cols) -->
+      <div class="lg:col-span-2 space-y-5">
+
+        <!-- Roles -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Roles</h2>
+          {% if form.roles.errors %}
+          <p class="mb-2 text-xs text-red-600">{{ form.roles.errors.0 }}</p>
+          {% endif %}
+          <div class="space-y-1">
+            {% for checkbox in form.roles %}
+            <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-100">
+              <input type="checkbox"
+                     name="{{ checkbox.data.name }}"
+                     value="{{ checkbox.data.value }}"
+                     {% if checkbox.data.selected %}checked{% endif %}
+                     class="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer">
+              <span class="text-sm font-medium text-black">{{ checkbox.choice_label }}</span>
+            </label>
+            {% empty %}
+            <p class="text-sm text-gray-400 px-3">No hay roles definidos.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Branches -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Sucursales</h2>
+          {% if form.branches.errors %}
+          <p class="mb-2 text-xs text-red-600">{{ form.branches.errors.0 }}</p>
+          {% endif %}
+          <div class="space-y-1">
+            {% for checkbox in form.branches %}
+            <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-100">
+              <input type="checkbox"
+                     name="{{ checkbox.data.name }}"
+                     value="{{ checkbox.data.value }}"
+                     {% if checkbox.data.selected %}checked{% endif %}
+                     class="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer">
+              <span class="text-sm font-medium text-black">{{ checkbox.choice_label }}</span>
+            </label>
+            {% empty %}
+            <p class="text-sm text-gray-400 px-3">No hay sucursales activas.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit"
+              class="px-6 py-2.5 bg-black text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-colors">
+        Guardar cambios
+      </button>
+      <a href="{% url 'users:list' %}"
+         class="px-6 py-2.5 border border-gray-200 text-black text-sm rounded-lg hover:bg-gray-50 transition-colors">
+        Cancelar
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
