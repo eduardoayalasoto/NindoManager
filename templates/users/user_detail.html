@@ -2,46 +2,59 @@
 {% block title %}{{ profile_user }} - Nindo Manager{% endblock %}
 {% block content %}
 <div class="max-w-2xl space-y-6">
-  <div>
-    <a href="{% url 'users:list' %}" class="text-sm text-gray-500 hover:text-black">← Usuarios</a>
-    <h1 class="text-2xl font-bold text-black mt-2">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+
+  <div class="flex items-start justify-between">
+    <div>
+      <a href="{% url 'users:list' %}" class="text-sm text-gray-500 hover:text-black transition-colors">← Usuarios</a>
+      <h1 class="text-2xl font-bold text-black mt-2">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+      <p class="text-sm text-gray-400">@{{ profile_user.username }}</p>
+    </div>
+    <a href="{% url 'users:admin_edit' pk=profile_user.pk %}"
+       class="mt-6 px-4 py-2 border border-gray-200 text-sm font-medium text-black rounded-lg hover:bg-black hover:text-white hover:border-black transition-colors">
+      Editar
+    </a>
   </div>
 
   <div class="bg-white border border-gray-200 rounded-xl p-5 grid grid-cols-2 gap-4 text-sm">
-    <div><span class="text-gray-400">Usuario</span><p class="font-medium text-black">{{ profile_user.username }}</p></div>
-    <div><span class="text-gray-400">Email</span><p class="font-medium text-black">{{ profile_user.email }}</p></div>
-    <div><span class="text-gray-400">Teléfono</span><p class="font-medium text-black">{{ profile_user.phone|default:"-" }}</p></div>
-    <div><span class="text-gray-400">WhatsApp</span><p class="font-medium text-black">{{ profile_user.whatsapp_number|default:"-" }}</p></div>
-    <div><span class="text-gray-400">Estado</span>
-      <p class="font-medium {% if profile_user.is_active %}text-green-600{% else %}text-red-600{% endif %}">
-        {% if profile_user.is_active %}Activo{% else %}Inactivo{% endif %}
-      </p>
+    <div>
+      <span class="text-gray-400 text-xs uppercase tracking-wider">Email</span>
+      <p class="font-medium text-black mt-0.5">{{ profile_user.email }}</p>
     </div>
-    <div><span class="text-gray-400">Notif. WhatsApp</span>
-      <p class="font-medium text-black">{% if profile_user.whatsapp_notifications %}Sí{% else %}No{% endif %}</p>
+    <div>
+      <span class="text-gray-400 text-xs uppercase tracking-wider">Teléfono</span>
+      <p class="font-medium text-black mt-0.5">{{ profile_user.phone|default:"—" }}</p>
+    </div>
+    <div>
+      <span class="text-gray-400 text-xs uppercase tracking-wider">WhatsApp</span>
+      <p class="font-medium text-black mt-0.5">{{ profile_user.whatsapp_number|default:"—" }}</p>
+    </div>
+    <div>
+      <span class="text-gray-400 text-xs uppercase tracking-wider">Notif. WhatsApp</span>
+      <p class="font-medium text-black mt-0.5">{% if profile_user.whatsapp_notifications %}Sí{% else %}No{% endif %}</p>
+    </div>
+    <div>
+      <span class="text-gray-400 text-xs uppercase tracking-wider">Estado</span>
+      <p class="mt-0.5">
+        {% if profile_user.is_active %}
+        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Activo</span>
+        {% else %}
+        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Inactivo</span>
+        {% endif %}
+      </p>
     </div>
   </div>
 
   <!-- Roles -->
   <div class="bg-white border border-gray-200 rounded-xl p-5">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="font-semibold text-black">Roles</h2>
-      <a href="{% url 'roles:assign' %}?user={{ profile_user.pk }}" class="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-red-600 transition-colors">
-        + Asignar rol
-      </a>
-    </div>
+    <h2 class="font-semibold text-black mb-4">Roles asignados</h2>
     {% if user_roles %}
     <div class="space-y-2">
       {% for ur in user_roles %}
-      <div class="flex items-center justify-between py-2 border-b border-gray-50">
+      <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
         <div>
           <span class="text-sm font-medium text-black">{{ ur.role.name }}</span>
-          <span class="text-xs text-gray-400 ml-2">{{ ur.branch.name }}</span>
+          <span class="text-xs text-gray-400 ml-2 bg-gray-100 px-2 py-0.5 rounded">{{ ur.branch.name }}</span>
         </div>
-        <form method="post" action="{% url 'roles:revoke' pk=ur.pk %}">
-          {% csrf_token %}
-          <button class="text-xs text-red-500 hover:text-red-700">Revocar</button>
-        </form>
       </div>
       {% endfor %}
     </div>
@@ -49,5 +62,6 @@
     <p class="text-sm text-gray-400">Sin roles asignados.</p>
     {% endif %}
   </div>
+
 </div>
 {% endblock %}
