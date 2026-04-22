@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #000000;
+  --color-brand-primary-hover: #CC0000;
+  --color-brand-primary-strong: #990000;
+  --color-brand-danger: #CC0000;
+  --color-brand-surface: #FFFFFF;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-black antialiased;
+  }
+}
+
+@layer components {
+  .ui-shell {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+
+  .ui-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2;
+  }
+}

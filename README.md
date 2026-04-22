@@ -5,10 +5,25 @@ Sistema de gestión operativa para NINDO Combat Center.
 ## Stack
 
 - **Backend**: Django 4.2 + SQLite (dev) / PostgreSQL (prod opcional)
-- **Frontend**: Django Templates + TailwindCSS + Alpine.js
+- **Frontend**: Django Templates + Tailwind CSS v4 + Alpine.js
 - **Notificaciones**: WhatsApp (Meta API / Twilio / Console)
 - **Tareas en background**: Celery + Redis (opcional en dev)
 - **Deploy**: Railway.app
+
+---
+
+
+## UI moderno (Tailwind CSS v4)
+
+Este proyecto compila estilos con **Tailwind CSS v4** desde `static/src/tailwind.css` hacia `static/css/app.css`.
+
+```bash
+npm install
+npm run tailwind:build   # build minificado
+npm run tailwind:watch   # desarrollo
+```
+
+Los componentes reutilizables viven en `templates/components/ui/`.
 
 ---
 

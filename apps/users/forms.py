@@ -4,7 +4,7 @@ from .models import User
 from apps.roles.models import Role
 from apps.branches.models import Branch
 
-INPUT_CLASS = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black text-sm"
+from apps.common.form_styles import INPUT_CLASS
 
 
 class NindoLoginForm(AuthenticationForm):

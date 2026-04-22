@@ -1,0 +1,10 @@
+{% with base='inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200 ui-focus disabled:cursor-not-allowed' %}
+  {% if href %}
+    <a href="{{ href }}" class="{{ base }} {{ size_classes }} {{ variant_classes }} {{ class_name|default:'' }}">{{ label }}</a>
+  {% else %}
+    <button type="{{ type|default:'button' }}" {% if attrs %}{{ attrs|safe }}{% endif %}
+      class="{{ base }} {{ size_classes }} {{ variant_classes }} {{ class_name|default:'' }}">
+      {{ label }}
+    </button>
+  {% endif %}
+{% endwith %}

@@ -1,0 +1,11 @@
+{% with size_classes='px-4 py-2.5 text-sm' %}
+  {% if s == 'sm' %}{% with size_classes='px-3 py-2 text-xs' %}
+    {% include "components/ui/_button_element.html" with size_classes=size_classes variant_classes=variant_classes %}
+  {% endwith %}
+  {% elif s == 'lg' %}{% with size_classes='px-5 py-3 text-base' %}
+    {% include "components/ui/_button_element.html" with size_classes=size_classes variant_classes=variant_classes %}
+  {% endwith %}
+  {% else %}
+    {% include "components/ui/_button_element.html" with size_classes=size_classes variant_classes=variant_classes %}
+  {% endif %}
+{% endwith %}

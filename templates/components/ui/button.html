@@ -1,0 +1,24 @@
+{% comment %}
+Usage:
+{% include "components/ui/button.html" with label="Guardar" variant="primary" type="submit" %}
+{% include "components/ui/button.html" with label="Ver" href=url variant="outline" size="sm" %}
+{% endcomment %}
+{% with v=variant|default:'primary' s=size|default:'md' %}
+  {% if v == 'primary' %}
+    {% with variant_classes='bg-brand-primary text-white hover:bg-brand-primary-hover disabled:bg-gray-300 disabled:text-gray-500' %}
+      {% include "components/ui/_button_core.html" with variant_classes=variant_classes s=s %}
+    {% endwith %}
+  {% elif v == 'secondary' %}
+    {% with variant_classes='bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400' %}
+      {% include "components/ui/_button_core.html" with variant_classes=variant_classes s=s %}
+    {% endwith %}
+  {% elif v == 'outline' %}
+    {% with variant_classes='border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50' %}
+      {% include "components/ui/_button_core.html" with variant_classes=variant_classes s=s %}
+    {% endwith %}
+  {% else %}
+    {% with variant_classes='bg-brand-danger text-white hover:bg-brand-primary-strong disabled:bg-red-200 disabled:text-red-600' %}
+      {% include "components/ui/_button_core.html" with variant_classes=variant_classes s=s %}
+    {% endwith %}
+  {% endif %}
+{% endwith %}

@@ -1,0 +1,8 @@
+<div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm {{ class_name|default:'' }}">
+  <table class="min-w-full divide-y divide-gray-200 text-sm">
+    {% if thead %}
+    <thead class="bg-gray-50">{{ thead|safe }}</thead>
+    {% endif %}
+    <tbody class="divide-y divide-gray-100 bg-white">{{ tbody|safe }}</tbody>
+  </table>
+</div>

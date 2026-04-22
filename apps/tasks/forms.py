@@ -1,8 +1,7 @@
 from django import forms
 from .models import Task, TaskInstance, TaskChecklist
 
-INPUT_CLASS = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
-SELECT_CLASS = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white"
+from apps.common.form_styles import INPUT_CLASS, SELECT_CLASS
 
 
 class TaskForm(forms.ModelForm):
