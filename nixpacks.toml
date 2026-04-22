@@ -1,0 +1,3 @@
+# Tell nixpacks to use only Python, ignoring the package.json (used for local Tailwind builds only).
+# Without this, nixpacks detects both Python and Node.js and can break the Python virtualenv setup.
+providers = ["python"]
