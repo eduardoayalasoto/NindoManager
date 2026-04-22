@@ -1,45 +1,24 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Nindo Manager{% endblock %}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            nindo: {
-              red: '#CC0000',
-              'red-dark': '#990000',
-              black: '#000000',
-              white: '#FFFFFF',
-              gray: '#F5F5F5',
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <style>
-    .nindo-red { color: #CC0000; }
-    .bg-nindo-red { background-color: #CC0000; }
-    .border-nindo-red { border-color: #CC0000; }
-    .hover\:bg-nindo-red:hover { background-color: #CC0000; }
-    .hover\:bg-nindo-red-dark:hover { background-color: #990000; }
     [x-cloak] { display: none !important; }
   </style>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-white text-black font-sans min-h-screen">
+<body class="min-h-screen bg-white text-black font-sans">
 
 {% if user.is_authenticated %}
   {% include "navbar.html" %}
   <div class="flex">
     {% include "sidebar.html" %}
-    <main class="flex-1 ml-64 p-6 min-h-screen bg-gray-50">
+    <main class="ml-64 min-h-screen flex-1 bg-gray-50 p-6 lg:p-8">
       {% include "components/messages.html" %}
       {% block content %}{% endblock %}
     </main>

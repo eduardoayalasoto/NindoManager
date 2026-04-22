@@ -3,7 +3,7 @@ from .models import Role, UserRole
 from apps.branches.models import Branch
 from apps.users.models import User
 
-INPUT_CLASS = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+from apps.common.form_styles import INPUT_CLASS
 
 
 class RoleForm(forms.ModelForm):

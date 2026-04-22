@@ -1,0 +1,12 @@
+{% with base='w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm ui-focus disabled:bg-gray-100 disabled:text-gray-500' %}
+<select
+  name="{{ name|default:'' }}"
+  id="{{ id|default:name|default:'' }}"
+  {% if required %}required{% endif %}
+  {% if disabled %}disabled{% endif %}
+  class="{{ base }} {{ class_name|default:'' }}"
+  {% if attrs %}{{ attrs|safe }}{% endif %}
+>
+  {{ options_html|safe }}
+</select>
+{% endwith %}
