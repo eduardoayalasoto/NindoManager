@@ -44,6 +44,10 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         return ctx
 
 
+def _is_ajax(request):
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
 class TaskCreateView(ManagerRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
@@ -74,6 +78,8 @@ class TaskCreateView(ManagerRequiredMixin, CreateView):
             request=self.request,
         )
         messages.success(self.request, f"Tarea '{form.instance.title}' creada.")
+        if _is_ajax(self.request):
+            return JsonResponse({"ok": True, "redirect": str(self.get_success_url())})
         return response
 
     def _save_checklist_items(self, task):
@@ -136,6 +142,8 @@ class TaskUpdateView(ManagerRequiredMixin, UpdateView):
             request=self.request,
         )
         messages.success(self.request, "Tarea actualizada.")
+        if _is_ajax(self.request):
+            return JsonResponse({"ok": True, "redirect": str(self.get_success_url())})
         return response
 
     def _save_checklist_items(self, task):
@@ -171,16 +179,23 @@ class TaskDeleteView(ManagerRequiredMixin, DeleteView):
     success_url = reverse_lazy("tasks:list")
 
     def form_valid(self, form):
+        title = self.object.title
+        branch = self.object.branch
+        pk = self.object.pk
         Activity.log(
             user=self.request.user,
             action="eliminar",
             content_type="Task",
-            object_id=self.object.pk,
-            description=f"Tarea '{self.object.title}' eliminada",
-            branch=self.object.branch,
+            object_id=pk,
+            description=f"Tarea '{title}' eliminada",
+            branch=branch,
             request=self.request,
         )
-        return super().form_valid(form)
+        self.object.delete()
+        if _is_ajax(self.request):
+            return JsonResponse({"ok": True})
+        messages.success(self.request, f"Tarea '{title}' eliminada.")
+        return redirect(self.success_url)
 
 
 class DailyTasksView(LoginRequiredMixin, ListView):
@@ -257,6 +272,8 @@ class TaskInstanceStartView(LoginRequiredMixin, View):
                 branch=instance.branch,
                 request=request,
             )
+        if _is_ajax(request):
+            return JsonResponse({"ok": True, "status": instance.status})
         return redirect("tasks:instance_detail", pk=pk)
 
 
@@ -280,6 +297,8 @@ class TaskInstanceCompleteView(LoginRequiredMixin, View):
                 request=request,
             )
             messages.success(request, "Tarea completada.")
+        if _is_ajax(request):
+            return JsonResponse({"ok": True, "status": "completada"})
         return redirect("tasks:daily")
 
 

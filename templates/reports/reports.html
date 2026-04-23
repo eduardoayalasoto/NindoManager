@@ -46,35 +46,44 @@
       <!-- Date + branch selectors -->
       <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
 
-        <!-- Day picker -->
-        <div x-show="type === 'day'" x-transition>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Fecha</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </span>
-            <input type="text" id="rpt-day-picker" x-model="selectedDate"
-                   placeholder="Selecciona una fecha"
-                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
-          </div>
-        </div>
+        <!-- Crossfade date picker — both pickers live in the DOM, container height animates -->
+        <div class="relative overflow-hidden"
+             :style="`height: ${pickerHeight}px; transition: height 220ms cubic-bezier(.4,0,.2,1)`">
 
-        <!-- Week picker -->
-        <div x-show="type === 'week'" x-transition>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Semana</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </span>
-            <input type="text" id="rpt-week-picker"
-                   placeholder="Selecciona una semana"
-                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
+          <!-- Day picker -->
+          <div x-ref="dayPicker" class="absolute inset-x-0 top-0"
+               :class="{ 'opacity-0 pointer-events-none': type !== 'day' }"
+               style="transition: opacity 180ms ease">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Fecha</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <input type="text" id="rpt-day-picker" x-model="selectedDate"
+                     placeholder="Selecciona una fecha"
+                     class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
+            </div>
           </div>
-          <p x-show="weekLabel" class="mt-1.5 text-xs text-gray-500" x-text="weekLabel"></p>
+
+          <!-- Week picker -->
+          <div x-ref="weekPicker" class="absolute inset-x-0 top-0"
+               :class="{ 'opacity-0 pointer-events-none': type !== 'week' }"
+               style="transition: opacity 180ms ease">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Semana</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <input type="text" id="rpt-week-picker"
+                     placeholder="Selecciona una semana"
+                     class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
+            </div>
+            <p x-show="weekLabel" class="mt-1.5 text-xs text-gray-500" x-text="weekLabel"></p>
+          </div>
         </div>
 
         <!-- Branch -->
@@ -218,8 +227,16 @@ function reportesApp() {
     report: '',
     loading: false,
     copied: false,
+    pickerHeight: 68,
     _dayPicker: null,
     _weekPicker: null,
+
+    _updatePickerHeight() {
+      this.$nextTick(() => {
+        const el = this.type === 'day' ? this.$refs.dayPicker : this.$refs.weekPicker;
+        if (el) this.pickerHeight = el.scrollHeight;
+      });
+    },
 
     initPickers() {
       // Day picker
@@ -259,6 +276,13 @@ function reportesApp() {
       const we = new Date(weekStart); we.setDate(we.getDate() + 6);
       this.selectedWeek = formatDate(weekStart);
       this.weekLabel = `Semana: ${formatDisplay(weekStart)} — ${formatDisplay(we)}`;
+
+      // Reactive height tracking
+      this.$nextTick(() => {
+        this._updatePickerHeight();
+        this.$watch('type', () => this._updatePickerHeight());
+        this.$watch('weekLabel', () => { if (this.type === 'week') this._updatePickerHeight(); });
+      });
     },
 
     _highlightWeek(fp, weekStart) {
