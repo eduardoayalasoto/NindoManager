@@ -54,9 +54,16 @@ class TaskCreateView(ManagerRequiredMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        import json
+        ctx = super().get_context_data(**kwargs)
+        ctx["checkpoints_json"] = "[]"
+        return ctx
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         response = super().form_valid(form)
+        self._save_checklist_items(self.object)
         Activity.log(
             user=self.request.user,
             action="crear",
@@ -68,6 +75,29 @@ class TaskCreateView(ManagerRequiredMixin, CreateView):
         )
         messages.success(self.request, f"Tarea '{form.instance.title}' creada.")
         return response
+
+    def _save_checklist_items(self, task):
+        items = self.request.POST.getlist("checklist_items")
+        ids = self.request.POST.getlist("checklist_ids")
+        existing = {str(obj.pk): obj for obj in task.checklist_items.all()}
+        processed = set()
+        order = 0
+        for item_text, item_id in zip(items, ids):
+            item_text = item_text.strip()
+            if not item_text:
+                continue
+            if item_id and item_id in existing:
+                obj = existing[item_id]
+                obj.item = item_text
+                obj.order = order
+                obj.save(update_fields=["item", "order"])
+                processed.add(item_id)
+            else:
+                TaskChecklist.objects.create(task=task, item=item_text, order=order)
+            order += 1
+        for pk, obj in existing.items():
+            if pk not in processed:
+                obj.delete()
 
     def get_success_url(self):
         return reverse_lazy("tasks:detail", kwargs={"pk": self.object.pk})
@@ -83,8 +113,19 @@ class TaskUpdateView(ManagerRequiredMixin, UpdateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        import json
+        ctx = super().get_context_data(**kwargs)
+        checkpoints = [
+            {"id": str(item.pk), "item": item.item}
+            for item in self.object.checklist_items.order_by("order")
+        ]
+        ctx["checkpoints_json"] = json.dumps(checkpoints)
+        return ctx
+
     def form_valid(self, form):
         response = super().form_valid(form)
+        self._save_checklist_items(self.object)
         Activity.log(
             user=self.request.user,
             action="actualizar",
@@ -96,6 +137,29 @@ class TaskUpdateView(ManagerRequiredMixin, UpdateView):
         )
         messages.success(self.request, "Tarea actualizada.")
         return response
+
+    def _save_checklist_items(self, task):
+        items = self.request.POST.getlist("checklist_items")
+        ids = self.request.POST.getlist("checklist_ids")
+        existing = {str(obj.pk): obj for obj in task.checklist_items.all()}
+        processed = set()
+        order = 0
+        for item_text, item_id in zip(items, ids):
+            item_text = item_text.strip()
+            if not item_text:
+                continue
+            if item_id and item_id in existing:
+                obj = existing[item_id]
+                obj.item = item_text
+                obj.order = order
+                obj.save(update_fields=["item", "order"])
+                processed.add(item_id)
+            else:
+                TaskChecklist.objects.create(task=task, item=item_text, order=order)
+            order += 1
+        for pk, obj in existing.items():
+            if pk not in processed:
+                obj.delete()
 
     def get_success_url(self):
         return reverse_lazy("tasks:detail", kwargs={"pk": self.object.pk})

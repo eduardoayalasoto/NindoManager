@@ -57,7 +57,7 @@
             </span>
             <input type="text" id="rpt-day-picker" x-model="selectedDate"
                    placeholder="Selecciona una fecha"
-                   class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors cursor-pointer">
+                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
           </div>
         </div>
 
@@ -72,7 +72,7 @@
             </span>
             <input type="text" id="rpt-week-picker"
                    placeholder="Selecciona una semana"
-                   class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors cursor-pointer">
+                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 cursor-pointer">
           </div>
           <p x-show="weekLabel" class="mt-1.5 text-xs text-gray-500" x-text="weekLabel"></p>
         </div>
@@ -86,8 +86,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </span>
+            <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
             <select x-model="branch"
-                    class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors appearance-none bg-white">
+                    class="w-full pl-9 pr-9 py-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 appearance-none cursor-pointer">
               <option value="">Todas las sucursales</option>
               {% for b in branches %}
               <option value="{{ b.pk }}">{{ b.name }}</option>
