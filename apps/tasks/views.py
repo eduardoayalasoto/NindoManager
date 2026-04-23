@@ -230,7 +230,21 @@ class ChecklistItemToggleView(LoginRequiredMixin, View):
             item.completed_by = None
             item.completed_at = None
         item.save()
-        return JsonResponse({"is_completed": item.is_completed})
+        return JsonResponse({"is_completed": item.is_completed, "pk": item.pk})
+
+
+class ChecklistItemCommentView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        import json
+        item = get_object_or_404(TaskChecklistItem, pk=pk)
+        try:
+            data = json.loads(request.body)
+            comment = data.get("comment", "")
+        except (json.JSONDecodeError, AttributeError):
+            comment = request.POST.get("comment", "")
+        item.comment = comment
+        item.save(update_fields=["comment"])
+        return JsonResponse({"ok": True, "comment": item.comment})
 
 
 class GenerateTodayInstancesView(ManagerRequiredMixin, View):

@@ -14,5 +14,6 @@ urlpatterns = [
     path("instancia/<int:pk>/iniciar/", views.TaskInstanceStartView.as_view(), name="instance_start"),
     path("instancia/<int:pk>/completar/", views.TaskInstanceCompleteView.as_view(), name="instance_complete"),
     path("checklist/<int:pk>/toggle/", views.ChecklistItemToggleView.as_view(), name="checklist_toggle"),
+    path("checklist/<int:pk>/comment/", views.ChecklistItemCommentView.as_view(), name="checklist_comment"),
     path("generar-hoy/", views.GenerateTodayInstancesView.as_view(), name="generate_today"),
 ]

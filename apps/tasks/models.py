@@ -178,6 +178,7 @@ class TaskChecklistItem(TimeStampedModel):
         verbose_name="Instancia de tarea",
     )
     is_completed = models.BooleanField(default=False, verbose_name="Completado")
+    comment = models.CharField(max_length=500, blank=True, verbose_name="Comentario")
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

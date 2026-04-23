@@ -1,4 +1,5 @@
 from django import forms
+from datetime import datetime, time
 from .models import Task, TaskInstance, TaskChecklist
 
 from apps.common.form_styles import INPUT_CLASS, SELECT_CLASS
@@ -16,7 +17,7 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = [
             "title", "description", "module", "branch", "assigned_to",
-            "priority", "estimated_duration", "is_recurring", "recurring_days",
+            "estimated_duration", "is_recurring", "recurring_days",
             "due_date",
         ]
         widgets = {
@@ -25,9 +26,8 @@ class TaskForm(forms.ModelForm):
             "module": forms.Select(attrs={"class": SELECT_CLASS}),
             "branch": forms.Select(attrs={"class": SELECT_CLASS}),
             "assigned_to": forms.Select(attrs={"class": SELECT_CLASS}),
-            "priority": forms.Select(attrs={"class": SELECT_CLASS}),
             "estimated_duration": forms.NumberInput(attrs={"class": INPUT_CLASS}),
-            "due_date": forms.DateTimeInput(attrs={"class": INPUT_CLASS, "type": "datetime-local"}),
+            "due_date": forms.DateInput(attrs={"class": INPUT_CLASS, "type": "date"}),
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -37,10 +37,20 @@ class TaskForm(forms.ModelForm):
             self.fields["branch"].queryset = branches
         if self.instance.pk and self.instance.recurring_days:
             self.fields["recurring_days"].initial = self.instance.recurring_days
+        if self.instance.pk and self.instance.due_date:
+            self.fields["due_date"].initial = self.instance.due_date.date()
 
     def clean_recurring_days(self):
         days = self.cleaned_data.get("recurring_days", [])
         return list(days)
+
+    def clean_due_date(self):
+        due = self.cleaned_data.get("due_date")
+        if due and not isinstance(due, datetime):
+            from django.utils import timezone as tz
+            due = datetime.combine(due, time(23, 59))
+            due = tz.make_aware(due)
+        return due
 
 
 class TaskInstanceUpdateForm(forms.ModelForm):
