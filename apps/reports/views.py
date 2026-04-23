@@ -149,28 +149,69 @@ def _build_week_report(week_start, week_end, instances, branch_id, request):
     completed = [i for i in all_instances if i.status == "completada"]
     delayed = [i for i in all_instances if i.status == "retrasada"]
     pending = [i for i in all_instances if i.status == "pendiente"]
-    in_progress = [i for i in all_instances if i.status == "en_progreso"]
 
-    pct = round(len(completed) / len(all_instances) * 100) if all_instances else 0
+    total = len(all_instances)
+    pct = round(len(completed) / total * 100) if total else 0
+
+    # Collect incidents: tasks with notes or item comments
+    incidents = []
+    for inst in all_instances:
+        issues = []
+        if inst.notes:
+            issues.append(inst.notes.strip())
+        for ci in inst.checklist_items.filter(comment__gt="").select_related("checklist"):
+            issues.append(f"{ci.checklist.item}: {ci.comment}")
+        if issues:
+            incidents.append((inst, issues))
 
     lines = [
-        f"📅 *Reporte semanal — {start_str} al {end_str}*",
-        f"🏢 Sucursal: {branch_name}",
+        f"📅 *Reporte Semanal Ejecutivo*",
+        f"🏢 {branch_name}  |  Semana del {start_str} al {end_str}",
         f"",
-        f"📊 *Resumen:* {len(all_instances)} tareas | ✅ {len(completed)} completadas ({pct}%) | 🔴 {len(delayed)} retrasadas | ⏳ {len(pending)} pendientes",
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━",
+        f"📊 *RESULTADOS GENERALES*",
+        f"• Eficiencia: *{pct}%* de cumplimiento",
+        f"• Completadas: {len(completed)} / {total} tareas",
     ]
 
-    # Group by day
-    from collections import defaultdict
-    by_day = defaultdict(list)
-    for inst in all_instances:
-        by_day[inst.due_date.date()].append(inst)
+    if delayed:
+        lines.append(f"• Sin completar: {len(delayed) + len(pending)} tareas (🔴 {len(delayed)} retrasadas, ⏳ {len(pending)} pendientes)")
+    elif pending:
+        lines.append(f"• Pendientes: {len(pending)} tareas")
 
-    for d in sorted(by_day.keys()):
-        day_instances = by_day[d]
-        day_completed = sum(1 for i in day_instances if i.status == "completada")
-        lines.append(f"\n📆 *{d.strftime('%A %d/%m')}* — {day_completed}/{len(day_instances)} completadas")
-        for inst in day_instances:
-            lines.append(_format_instance(inst))
+    # Accomplishments summary
+    if completed:
+        lines.append(f"")
+        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━")
+        lines.append(f"✅ *LOGROS DESTACADOS*")
+        # Group completed by task type to avoid repetition
+        task_names = {}
+        for inst in completed:
+            name = inst.task.title
+            task_names[name] = task_names.get(name, 0) + 1
+        for name, count in sorted(task_names.items()):
+            suffix = f" ({count}×)" if count > 1 else ""
+            lines.append(f"• {name}{suffix}")
+
+    # Incidents
+    if incidents:
+        lines.append(f"")
+        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━")
+        lines.append(f"⚠️ *INCIDENCIAS Y OBSERVACIONES*")
+        for inst, issues in incidents:
+            lines.append(f"• *{inst.task.title}* ({inst.due_date.strftime('%d/%m')}):")
+            for issue in issues:
+                lines.append(f"  → {issue}")
+
+    # Delayed tasks
+    if delayed:
+        lines.append(f"")
+        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━")
+        lines.append(f"🔴 *TAREAS NO COMPLETADAS*")
+        for inst in delayed:
+            lines.append(f"• {inst.task.title} ({inst.due_date.strftime('%d/%m')})")
+
+    lines.append(f"")
+    lines.append(f"_Reporte generado automáticamente — Nindō Manager_")
 
     return "\n".join(lines)

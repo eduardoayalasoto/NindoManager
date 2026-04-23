@@ -2,146 +2,296 @@
 {% block title %}Reportes - Nindo Manager{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl space-y-6" x-data="reportesApp()">
+<div class="max-w-4xl" x-data="reportesApp()" x-init="initPickers()">
 
-  <div>
-    <h1 class="text-2xl font-bold text-black">Reportes</h1>
-    <p class="text-sm text-gray-500 mt-1">Genera resúmenes para compartir por WhatsApp</p>
+  <!-- Page header -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-1 h-7 bg-red-600 rounded-full"></div>
+      <h1 class="text-2xl font-bold text-black tracking-tight">Reportes</h1>
+    </div>
+    <p class="text-sm text-gray-500 ml-4">Genera resúmenes ejecutivos para compartir por WhatsApp</p>
   </div>
 
-  <!-- Config card -->
-  <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-    <!-- Tipo de proceso -->
-    <div>
-      <label class="block text-sm font-semibold text-black mb-2">Tipo de reporte</label>
-      <div class="flex gap-3">
-        <label class="flex-1 cursor-pointer">
-          <input type="radio" name="report_type" value="day" x-model="type" class="sr-only">
-          <div :class="type === 'day'
-                ? 'border-violet-500 bg-violet-50 text-violet-700'
-                : 'border-gray-200 text-gray-600 hover:border-gray-300'"
-               class="border-2 rounded-xl p-4 text-center transition-colors">
-            <div class="text-2xl mb-1">📋</div>
+    <!-- LEFT: Config panel -->
+    <div class="lg:col-span-2 space-y-5">
+
+      <!-- Type selector -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Tipo de reporte</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button @click="type = 'day'"
+                  :class="type === 'day'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
+                  class="border-2 rounded-xl p-3 text-center transition-all duration-150">
+            <div class="text-xl mb-1">📋</div>
             <div class="font-semibold text-sm">Del día</div>
-            <div class="text-xs mt-0.5 opacity-70">Selecciona una fecha</div>
-          </div>
-        </label>
-        <label class="flex-1 cursor-pointer">
-          <input type="radio" name="report_type" value="week" x-model="type" class="sr-only">
-          <div :class="type === 'week'
-                ? 'border-violet-500 bg-violet-50 text-violet-700'
-                : 'border-gray-200 text-gray-600 hover:border-gray-300'"
-               class="border-2 rounded-xl p-4 text-center transition-colors">
-            <div class="text-2xl mb-1">📅</div>
+            <div class="text-xs opacity-60 mt-0.5 leading-tight">Una fecha exacta</div>
+          </button>
+          <button @click="type = 'week'"
+                  :class="type === 'week'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
+                  class="border-2 rounded-xl p-3 text-center transition-all duration-150">
+            <div class="text-xl mb-1">📅</div>
             <div class="font-semibold text-sm">Semanal</div>
-            <div class="text-xs mt-0.5 opacity-70">Selecciona una semana</div>
+            <div class="text-xs opacity-60 mt-0.5 leading-tight">Resumen ejecutivo</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date + branch selectors -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+
+        <!-- Day picker -->
+        <div x-show="type === 'day'" x-transition>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Fecha</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </span>
+            <input type="text" id="rpt-day-picker" x-model="selectedDate"
+                   placeholder="Selecciona una fecha"
+                   class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors cursor-pointer">
           </div>
-        </label>
+        </div>
+
+        <!-- Week picker -->
+        <div x-show="type === 'week'" x-transition>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Semana</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </span>
+            <input type="text" id="rpt-week-picker"
+                   placeholder="Selecciona una semana"
+                   class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors cursor-pointer">
+          </div>
+          <p x-show="weekLabel" class="mt-1.5 text-xs text-gray-500" x-text="weekLabel"></p>
+        </div>
+
+        <!-- Branch -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Sucursal</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </span>
+            <select x-model="branch"
+                    class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black transition-colors appearance-none bg-white">
+              <option value="">Todas las sucursales</option>
+              {% for b in branches %}
+              <option value="{{ b.pk }}">{{ b.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <button @click="generate()"
+              :disabled="loading"
+              class="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-150
+                     bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center justify-center gap-2">
+        <template x-if="!loading">
+          <span class="flex items-center gap-2">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Generar reporte
+          </span>
+        </template>
+        <template x-if="loading">
+          <span class="flex items-center gap-2">
+            <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Generando…
+          </span>
+        </template>
+      </button>
+
+    </div>
+
+    <!-- RIGHT: Preview panel -->
+    <div class="lg:col-span-3">
+
+      <!-- Empty state -->
+      <div x-show="!report && !loading" x-transition
+           class="bg-white border border-gray-200 rounded-2xl p-10 shadow-sm flex flex-col items-center justify-center text-center h-full min-h-64">
+        <div class="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+          <svg class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-sm font-medium text-gray-400">Selecciona el tipo y el período,</p>
+        <p class="text-sm text-gray-300">luego genera el reporte.</p>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div x-show="loading" x-transition
+           class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-3 animate-pulse">
+        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
+        <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+        <div class="h-3 bg-gray-100 rounded w-5/6"></div>
+        <div class="h-3 bg-gray-100 rounded w-2/3"></div>
+        <div class="h-3 bg-gray-100 rounded w-4/5"></div>
+      </div>
+
+      <!-- Report preview -->
+      <div x-show="report && !loading" x-transition
+           class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+
+        <!-- Preview header -->
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-green-400"></div>
+            <span class="text-sm font-semibold text-gray-700">Vista previa</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button @click="copyReport()"
+                    :class="copied ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'"
+                    class="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-medium transition-all duration-150">
+              <template x-if="!copied">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+              </template>
+              <template x-if="copied">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </template>
+              <span x-text="copied ? '¡Copiado!' : 'Copiar'"></span>
+            </button>
+
+            <a :href="whatsappLink()" target="_blank"
+               class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
+               style="background:#25D366;">
+              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <!-- Report text -->
+        <pre class="p-5 text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed bg-white overflow-x-auto max-h-[500px] overflow-y-auto"
+             x-text="report"></pre>
       </div>
     </div>
-
-    <!-- Sucursal -->
-    <div>
-      <label class="block text-sm font-semibold text-black mb-2">Sucursal</label>
-      <select x-model="branch"
-              class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-violet-500">
-        <option value="">Todas las sucursales</option>
-        {% for b in branches %}
-        <option value="{{ b.pk }}">{{ b.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <!-- Date picker: día -->
-    <div x-show="type === 'day'" x-cloak>
-      <label class="block text-sm font-semibold text-black mb-2">Fecha</label>
-      <input type="date" x-model="selectedDate"
-             class="px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-violet-500">
-    </div>
-
-    <!-- Date picker: semana -->
-    <div x-show="type === 'week'" x-cloak>
-      <label class="block text-sm font-semibold text-black mb-2">Semana</label>
-      <input type="week" x-model="selectedWeek"
-             class="px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-violet-500">
-    </div>
-
-    <button @click="generate()"
-            :disabled="loading"
-            class="w-full py-2.5 rounded-lg text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-60"
-            style="background: linear-gradient(to right, #7c3aed, #6d28d9);">
-      <span x-show="!loading">Generar reporte</span>
-      <span x-show="loading" x-cloak>Generando…</span>
-    </button>
-  </div>
-
-  <!-- Preview -->
-  <div x-show="report" x-cloak class="bg-white border border-gray-200 rounded-xl overflow-hidden">
-    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h2 class="font-semibold text-black">Vista previa</h2>
-      <div class="flex gap-2">
-        <button @click="copyReport()"
-                class="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-          </svg>
-          <span x-text="copied ? '¡Copiado!' : 'Copiar'"></span>
-        </button>
-        <a :href="whatsappLink()"
-           target="_blank"
-           class="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg text-white transition-opacity hover:opacity-90"
-           style="background-color: #25D366;">
-          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-          </svg>
-          WhatsApp
-        </a>
-      </div>
-    </div>
-    <pre class="p-5 text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed bg-gray-50"
-         x-text="report"></pre>
   </div>
 
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
 function reportesApp() {
-  const today = new Date().toISOString().split('T')[0];
-  const todayDate = new Date();
-  const year = todayDate.getFullYear();
-  const week = getISOWeek(todayDate);
-  const weekStr = `${year}-W${String(week).padStart(2, '0')}`;
+  const today = new Date();
+  const todayStr = formatDate(today);
+  const weekStart = getWeekStart(today);
 
   return {
     type: 'day',
     branch: '',
-    selectedDate: today,
-    selectedWeek: weekStr,
+    selectedDate: todayStr,
+    selectedWeek: todayStr,
+    weekLabel: '',
     report: '',
     loading: false,
     copied: false,
+    _dayPicker: null,
+    _weekPicker: null,
+
+    initPickers() {
+      // Day picker
+      this._dayPicker = flatpickr('#rpt-day-picker', {
+        locale: 'es',
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'd/m/Y',
+        firstDayOfWeek: 1,
+        defaultDate: this.selectedDate,
+        onChange: (dates, dateStr) => {
+          this.selectedDate = dateStr;
+        },
+      });
+
+      // Week picker: pick any day, snap to Monday
+      this._weekPicker = flatpickr('#rpt-week-picker', {
+        locale: 'es',
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'd/m/Y',
+        firstDayOfWeek: 1,
+        defaultDate: formatDate(weekStart),
+        onReady: (_, __, fp) => { this._highlightWeek(fp, weekStart); },
+        onChange: (dates, dateStr, fp) => {
+          const d = dates[0];
+          const ws = getWeekStart(d);
+          const we = new Date(ws); we.setDate(we.getDate() + 6);
+          this.selectedWeek = formatDate(ws);
+          this.weekLabel = `Semana: ${formatDisplay(ws)} — ${formatDisplay(we)}`;
+          this._highlightWeek(fp, ws);
+          fp.setDate(ws, false);
+        },
+      });
+
+      // Init week label
+      const we = new Date(weekStart); we.setDate(we.getDate() + 6);
+      this.selectedWeek = formatDate(weekStart);
+      this.weekLabel = `Semana: ${formatDisplay(weekStart)} — ${formatDisplay(we)}`;
+    },
+
+    _highlightWeek(fp, weekStart) {
+      // Remove previous highlights
+      fp.calendarContainer.querySelectorAll('.week-highlight').forEach(el => el.classList.remove('week-highlight', 'bg-red-50', 'rounded-none'));
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
+      fp.calendarContainer.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(dayEl => {
+        const d = new Date(dayEl.dateObj);
+        if (d >= weekStart && d <= weekEnd) {
+          dayEl.classList.add('bg-red-50');
+        }
+      });
+    },
 
     generate() {
       this.loading = true;
       this.report = '';
       const params = new URLSearchParams({ type: this.type, branch: this.branch });
-      if (this.type === 'day') params.set('date', this.selectedDate);
-      else params.set('week', this.selectedWeek);
-
-      fetch(`/reportes/generar/?${params}`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      })
-      .then(r => r.json())
-      .then(data => { this.report = data.report; })
-      .finally(() => { this.loading = false; });
+      if (this.type === 'day') {
+        params.set('date', this.selectedDate);
+      } else {
+        // Compute ISO week string from selectedWeek (Monday of the week)
+        const ws = new Date(this.selectedWeek);
+        const year = ws.getFullYear();
+        const week = getISOWeek(ws);
+        params.set('week', `${year}-W${String(week).padStart(2,'0')}`);
+      }
+      fetch(`/reportes/generar/?${params}`)
+        .then(r => r.json())
+        .then(data => { this.report = data.report; })
+        .catch(() => { this.report = 'Error al generar el reporte.'; })
+        .finally(() => { this.loading = false; });
     },
 
     copyReport() {
       navigator.clipboard.writeText(this.report).then(() => {
         this.copied = true;
-        setTimeout(() => { this.copied = false; }, 2000);
+        setTimeout(() => { this.copied = false; }, 2500);
       });
     },
 
@@ -149,6 +299,26 @@ function reportesApp() {
       return `https://api.whatsapp.com/send?text=${encodeURIComponent(this.report)}`;
     },
   };
+}
+
+function formatDate(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function formatDisplay(d) {
+  return String(d.getDate()).padStart(2,'0') + '/' +
+    String(d.getMonth()+1).padStart(2,'0') + '/' +
+    d.getFullYear();
+}
+
+function getWeekStart(d) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? -6 : 1 - day; // adjust to Monday
+  date.setDate(date.getDate() + diff);
+  return date;
 }
 
 function getISOWeek(d) {

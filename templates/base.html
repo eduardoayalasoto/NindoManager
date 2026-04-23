@@ -6,9 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Nindo Manager{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     [x-cloak] { display: none !important; }
+    /* Flatpickr brand overrides */
+    .flatpickr-day.selected, .flatpickr-day.selected:hover { background: #dc2626; border-color: #dc2626; }
+    .flatpickr-day.today { border-color: #dc2626; }
+    .flatpickr-day.today:hover { background: #fef2f2; color: #dc2626; }
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg { fill: #dc2626; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   {% block extra_head %}{% endblock %}
 </head>

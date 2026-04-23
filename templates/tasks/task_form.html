@@ -88,3 +88,16 @@
   </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+flatpickr('#id_due_date', {
+  locale: 'es',
+  dateFormat: 'Y-m-d',
+  altInput: true,
+  altFormat: 'd/m/Y',
+  firstDayOfWeek: 1,
+  {% if object and object.due_date %}defaultDate: '{{ object.due_date|date:"Y-m-d" }}',{% endif %}
+});
+</script>
+{% endblock %}

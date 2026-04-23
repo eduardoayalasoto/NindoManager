@@ -15,9 +15,10 @@
          class="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
         Hoy
       </a>
-      <form method="get" class="flex gap-2">
-        <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
-               class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black">
+      <form method="get" class="flex gap-2" id="date-nav-form">
+        <input type="text" id="date-picker-nav" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+               placeholder="dd/mm/aaaa"
+               class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black w-36">
         {% if request.GET.branch %}<input type="hidden" name="branch" value="{{ request.GET.branch }}">{% endif %}
         <button type="submit" class="px-3 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Ir</button>
       </form>
@@ -166,4 +167,18 @@
     </div>
   </div>
 </div>
+
+{% block extra_scripts %}
+<script>
+flatpickr('#date-picker-nav', {
+  locale: 'es',
+  dateFormat: 'Y-m-d',
+  altInput: true,
+  altFormat: 'd/m/Y',
+  firstDayOfWeek: 1,
+  defaultDate: '{{ selected_date|date:"Y-m-d" }}',
+});
+</script>
+{% endblock %}
+
 {% endblock %}
