@@ -10,6 +10,7 @@ urlpatterns = [
     path("sucursales/", include("apps.branches.urls")),
     path("roles/", include("apps.roles.urls")),
     path("tareas/", include("apps.tasks.urls")),
+    path("reportes/", include("apps.reports.urls")),
     path("actividades/", include("apps.activities.urls")),
     path("notificaciones/", include("apps.notifications.urls")),
     path("api/", include("apps.dashboard.api_urls")),
