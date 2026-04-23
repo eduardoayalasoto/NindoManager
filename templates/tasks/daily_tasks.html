@@ -10,7 +10,6 @@
       <p class="text-gray-500 text-sm">{{ selected_date|date:"l, j \d\e F \d\e Y" }}</p>
     </div>
     <div class="flex gap-2 flex-wrap">
-      <!-- Date nav -->
       <a href="?date={{ selected_date|date:'Y-m-d' }}&{% if request.GET.branch %}branch={{ request.GET.branch }}{% endif %}"
          class="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
         Hoy
@@ -18,7 +17,7 @@
       <form method="get" class="flex gap-2" id="date-nav-form">
         <input type="text" id="date-picker-nav" name="date" value="{{ selected_date|date:'Y-m-d' }}"
                placeholder="dd/mm/aaaa"
-               class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black w-36">
+               class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 w-36">
         {% if request.GET.branch %}<input type="hidden" name="branch" value="{{ request.GET.branch }}">{% endif %}
         <button type="submit" class="px-3 py-2 bg-black text-white text-sm rounded-lg hover:bg-red-600 transition-colors">Ir</button>
       </form>
@@ -27,15 +26,20 @@
 
   <!-- Filters -->
   <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap gap-3">
-    <select name="branch" onchange="this.form.submit()" form="filter-form"
-            class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black">
-      <option value="">Todas las sucursales</option>
-      {% for branch in branches %}
-      <option value="{{ branch.pk }}" {% if request.GET.branch == branch.pk|stringformat:'s' %}selected{% endif %}>
-        {{ branch.name }}
-      </option>
-      {% endfor %}
-    </select>
+    <div class="relative">
+      <select name="branch" onchange="this.form.submit()" form="filter-form"
+              class="pl-3 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2 appearance-none cursor-pointer">
+        <option value="">Todas las sucursales</option>
+        {% for branch in branches %}
+        <option value="{{ branch.pk }}" {% if request.GET.branch == branch.pk|stringformat:'s' %}selected{% endif %}>
+          {{ branch.name }}
+        </option>
+        {% endfor %}
+      </select>
+      <span class="absolute inset-y-0 right-2.5 flex items-center text-gray-400 pointer-events-none">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </span>
+    </div>
     <form id="filter-form" method="get">
       <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
     </form>
@@ -79,81 +83,145 @@
 
     <div class="divide-y divide-gray-50">
       {% for instance in instances %}
-      <div class="px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
-        <!-- Status indicator -->
-        <div class="flex-shrink-0">
-          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full
-            {% if instance.status == 'completada' %}bg-green-100 text-green-600
-            {% elif instance.status == 'en_progreso' %}bg-blue-100 text-blue-600
-            {% elif instance.status == 'retrasada' %}bg-red-100 text-red-600
-            {% else %}bg-gray-100 text-gray-500{% endif %}">
-            {% if instance.status == 'completada' %}
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            {% elif instance.status == 'en_progreso' %}
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {% elif instance.status == 'retrasada' %}
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            {% else %}
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            {% endif %}
-          </span>
-        </div>
+      <div class="px-5 py-3 hover:bg-gray-50 transition-colors"
+           x-data="{
+             status: '{{ instance.status }}',
+             loading: false,
+             notes: '',
+             showNotes: false,
+             async doStart() {
+               this.loading = true;
+               try {
+                 const r = await fetch('{% url 'tasks:instance_start' pk=instance.pk %}', {
+                   method: 'POST',
+                   headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+                   body: new URLSearchParams({ csrfmiddlewaretoken: '{{ csrf_token }}' })
+                 });
+                 const d = await r.json();
+                 if (d.ok) this.status = d.status;
+               } finally { this.loading = false; }
+             },
+             async doComplete() {
+               this.loading = true;
+               try {
+                 const body = new URLSearchParams({ csrfmiddlewaretoken: '{{ csrf_token }}' });
+                 if (this.notes) body.set('notes', this.notes);
+                 const r = await fetch('{% url 'tasks:instance_complete' pk=instance.pk %}', {
+                   method: 'POST',
+                   headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+                   body
+                 });
+                 const d = await r.json();
+                 if (d.ok) { this.status = 'completada'; this.showNotes = false; }
+               } finally { this.loading = false; }
+             }
+           }">
 
-        <!-- Task info -->
-        <div class="flex-1 min-w-0">
-          <a href="{% url 'tasks:instance_detail' pk=instance.pk %}" class="font-medium text-black hover:text-red-600 transition-colors">
-            {{ instance.task.title }}
-          </a>
-          <div class="flex items-center gap-3 mt-1 flex-wrap">
-            <span class="text-xs text-gray-400">{{ instance.branch.name }}</span>
-            {% if instance.task.module %}
-            <span class="text-xs text-gray-400">· {{ instance.task.module.name }}</span>
-            {% endif %}
-            {% if instance.assigned_to %}
-            <span class="text-xs text-gray-400">· {{ instance.assigned_to }}</span>
-            {% endif %}
+        <div class="flex items-center gap-4">
+          <!-- Status indicator — reactive -->
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300"
+                :class="{
+                  'bg-green-100 text-green-600': status === 'completada',
+                  'bg-blue-100 text-blue-600':  status === 'en_progreso',
+                  'bg-red-100 text-red-600':    status === 'retrasada',
+                  'bg-gray-100 text-gray-500':  status === 'pendiente'
+                }">
+            <svg x-show="status === 'completada'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <svg x-show="status === 'en_progreso'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <svg x-show="status === 'retrasada'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <svg x-show="status === 'pendiente'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </span>
+
+          <!-- Task info -->
+          <div class="flex-1 min-w-0">
+            <a href="{% url 'tasks:instance_detail' pk=instance.pk %}" class="font-medium text-black hover:text-red-600 transition-colors">
+              {{ instance.task.title }}
+            </a>
+            <div class="flex items-center gap-3 mt-0.5 flex-wrap">
+              <span class="text-xs text-gray-400">{{ instance.branch.name }}</span>
+              {% if instance.task.module %}<span class="text-xs text-gray-400">· {{ instance.task.module.name }}</span>{% endif %}
+              {% if instance.assigned_to %}<span class="text-xs text-gray-400">· {{ instance.assigned_to }}</span>{% endif %}
+            </div>
+          </div>
+
+          <!-- Priority badge -->
+          <span class="text-xs px-2 py-1 rounded-full border flex-shrink-0
+            {% if instance.task.priority == 'alta' %}border-red-200 text-red-700 bg-red-50
+            {% elif instance.task.priority == 'media' %}border-yellow-200 text-yellow-700 bg-yellow-50
+            {% else %}border-gray-200 text-gray-500 bg-gray-50{% endif %}">
+            {{ instance.task.get_priority_display }}
+          </span>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <!-- Iniciar -->
+            <button x-show="status === 'pendiente'"
+                    :disabled="loading" @click="doStart()"
+                    class="px-3 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-40 flex items-center gap-1">
+              <svg x-show="loading" class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              <span x-show="!loading">Iniciar</span>
+            </button>
+
+            <!-- En progreso: note toggle + completar -->
+            <template x-if="status === 'en_progreso'">
+              <div class="flex items-center gap-1.5">
+                <button @click="showNotes = !showNotes"
+                        :class="showNotes ? 'text-black bg-gray-100' : 'text-gray-400 hover:text-black'"
+                        class="p-1.5 rounded-lg transition-colors" title="Nota">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+                <button :disabled="loading" @click="doComplete()"
+                        class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors disabled:opacity-40 flex items-center gap-1">
+                  <svg x-show="loading" class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span x-show="!loading">Completar</span>
+                </button>
+              </div>
+            </template>
+
+            <!-- Completada -->
+            <span x-show="status === 'completada'" class="text-xs text-green-600 font-medium flex items-center gap-1">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              Lista
+            </span>
           </div>
         </div>
 
-        <!-- Priority badge -->
-        <span class="text-xs px-2 py-1 rounded-full border flex-shrink-0
-          {% if instance.task.priority == 'alta' %}border-red-200 text-red-700 bg-red-50
-          {% elif instance.task.priority == 'media' %}border-yellow-200 text-yellow-700 bg-yellow-50
-          {% else %}border-gray-200 text-gray-500 bg-gray-50{% endif %}">
-          {{ instance.task.get_priority_display }}
-        </span>
-
-        <!-- Actions -->
-        <div class="flex gap-2 flex-shrink-0">
-          {% if instance.status == 'pendiente' %}
-          <form method="post" action="{% url 'tasks:instance_start' pk=instance.pk %}">
-            {% csrf_token %}
-            <button class="px-3 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-blue-600 transition-colors">
-              Iniciar
-            </button>
-          </form>
-          {% elif instance.status == 'en_progreso' %}
-          <form method="post" action="{% url 'tasks:instance_complete' pk=instance.pk %}" x-data="{ open: false }">
-            {% csrf_token %}
-            <button type="submit" class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors">
-              Completar
-            </button>
-          </form>
-          {% endif %}
+        <!-- Optional note input — slides in when showNotes is true -->
+        <div x-show="showNotes"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 -translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-1"
+             class="mt-2 pl-12">
+          <input type="text" x-model="notes"
+                 placeholder="Nota para esta tarea (opcional)…"
+                 class="w-full max-w-sm rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary-hover">
         </div>
       </div>
       {% empty %}
       <div class="py-16 text-center">
         <svg class="h-12 w-12 text-gray-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
         </svg>
         <p class="text-gray-400 text-sm">No hay tareas para este día.</p>
         <form method="post" action="{% url 'tasks:generate_today' %}" class="mt-4">

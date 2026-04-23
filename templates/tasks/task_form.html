@@ -139,9 +139,15 @@
 
       </div>
 
-      <div class="flex gap-3 pt-2">
-        <button type="submit" class="px-6 py-2.5 bg-black text-white font-medium rounded-lg hover:bg-red-600 transition-colors">
-          {% if object %}Guardar cambios{% else %}Crear tarea{% endif %}
+      <div class="flex gap-3 pt-2" x-data="{ saving: false }">
+        <button type="submit" :disabled="saving"
+                class="px-6 py-2.5 bg-black text-white font-medium rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2">
+          <svg x-show="saving" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span x-show="!saving">{% if object %}Guardar cambios{% else %}Crear tarea{% endif %}</span>
+          <span x-show="saving">Guardando…</span>
         </button>
         <a href="{% url 'tasks:list' %}" class="px-6 py-2.5 border border-gray-200 text-black rounded-lg hover:bg-gray-50 transition-colors">
           Cancelar
@@ -154,6 +160,43 @@
 
 {% block extra_scripts %}
 <script>
+/* AJAX form submit — shows spinner, redirects on success, falls back on validation errors */
+(function () {
+  const form = document.querySelector('form[method="post"]');
+  if (!form) return;
+
+  form.addEventListener('submit', async function handler(e) {
+    e.preventDefault();
+    const savingEl = form.querySelector('[x-data]');
+    const alpine = savingEl ? savingEl._x_dataStack?.[0] : null;
+    if (alpine) alpine.saving = true;
+
+    try {
+      const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: new FormData(form),
+      });
+
+      const ct = resp.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await resp.json();
+        if (data.ok && data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+      }
+
+      /* Validation errors: fall back to native submit so Django re-renders inline errors */
+      form.removeEventListener('submit', handler);
+      form.submit();
+    } catch {
+      form.removeEventListener('submit', handler);
+      form.submit();
+    }
+  });
+})();
+
 function taskFormData(initialCheckpoints, isRecurring) {
   let uid = 0;
   return {
