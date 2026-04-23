@@ -37,15 +37,18 @@
 
   {% if checklist_items %}
   <div class="bg-white border border-gray-200 rounded-xl p-5">
-    <h2 class="font-semibold text-black mb-3">Checklist</h2>
-    <ul class="space-y-2">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-black">Checkpoints</h2>
+      <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ checklist_items|length }}</span>
+    </div>
+    <ol class="space-y-2">
       {% for item in checklist_items %}
-      <li class="flex items-center gap-2 text-sm text-black">
-        <span class="w-1.5 h-1.5 rounded-full bg-black flex-shrink-0"></span>
-        {{ item.item }}
+      <li class="flex items-start gap-3 text-sm text-black">
+        <span class="shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-xs font-medium flex items-center justify-center mt-0.5">{{ forloop.counter }}</span>
+        <span class="pt-0.5">{{ item.item }}</span>
       </li>
       {% endfor %}
-    </ul>
+    </ol>
   </div>
   {% endif %}
 

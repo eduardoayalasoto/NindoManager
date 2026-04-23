@@ -51,29 +51,92 @@
         {{ form.due_date }}
       </div>
 
-      <!-- Recurring -->
-      <div class="border border-gray-100 rounded-lg p-4" x-data="{ recurring: {{ form.is_recurring.value|yesno:'true,false' }} }">
+      <!-- Recurring + Checkpoints -->
+      <div class="border border-gray-200 rounded-xl p-5 space-y-4"
+           x-data="taskFormData({{ checkpoints_json }}, {{ form.is_recurring.value|yesno:'true,false' }})">
+
+        <!-- Recurring toggle -->
         <label class="flex items-center gap-3 cursor-pointer">
           <input type="checkbox" name="{{ form.is_recurring.html_name }}"
                  {% if form.is_recurring.value %}checked{% endif %}
                  @change="recurring = $event.target.checked"
                  class="rounded border-gray-300 text-black focus:ring-black">
-          <span class="text-sm font-medium text-black">Tarea recurrente</span>
+          <div>
+            <span class="text-sm font-medium text-black">Tarea recurrente</span>
+            <p class="text-xs text-gray-400 mt-0.5">Se genera automáticamente en los días seleccionados</p>
+          </div>
         </label>
 
-        <div x-show="recurring" x-cloak class="mt-4">
-          <p class="text-sm text-gray-600 mb-3">Días de recurrencia:</p>
-          <div class="flex flex-wrap gap-2">
-            {% for value, label in form.recurring_days.field.choices %}
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="{{ form.recurring_days.html_name }}" value="{{ value }}"
-                     {% if value in form.recurring_days.value %}checked{% endif %}
-                     class="rounded border-gray-300 text-black focus:ring-black">
-              <span class="text-sm">{{ label }}</span>
-            </label>
-            {% endfor %}
+        <div x-show="recurring" x-cloak class="space-y-4 border-t border-gray-100 pt-4">
+
+          <!-- Recurring days -->
+          <div>
+            <p class="text-sm font-medium text-black mb-2">Días de recurrencia</p>
+            <div class="flex flex-wrap gap-2">
+              {% for value, label in form.recurring_days.field.choices %}
+              <label class="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:border-gray-400 has-[:checked]:border-black has-[:checked]:bg-black has-[:checked]:text-white transition-colors">
+                <input type="checkbox" name="{{ form.recurring_days.html_name }}" value="{{ value }}"
+                       {% if value in form.recurring_days.value %}checked{% endif %}
+                       class="sr-only">
+                <span>{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
           </div>
+
+          <!-- Checkpoint editor -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-sm font-medium text-black">Checkpoints</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  Pasos que componen esta tarea recurrente
+                  <span class="font-medium text-black" x-text="'(' + checkpoints.length + ')'"></span>
+                </p>
+              </div>
+              <button type="button" @click="addCheckpoint()"
+                      class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-black text-white rounded-lg hover:bg-red-600 transition-colors">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Agregar
+              </button>
+            </div>
+
+            <!-- Checkpoint list -->
+            <div class="space-y-2">
+              <template x-for="(cp, idx) in checkpoints" :key="cp._uid">
+                <div class="flex items-center gap-2 group">
+                  <span class="text-xs font-medium text-gray-400 w-5 text-right shrink-0" x-text="(idx + 1) + '.'"></span>
+                  <input type="text" x-model="cp.item"
+                         :placeholder="'Checkpoint ' + (idx + 1)"
+                         class="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-hover focus-visible:ring-offset-2">
+                  <button type="button" @click="removeCheckpoint(idx)"
+                          class="shrink-0 p-1.5 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              </template>
+            </div>
+
+            <p x-show="checkpoints.length === 0"
+               class="text-sm text-gray-400 italic py-3 text-center border border-dashed border-gray-200 rounded-lg">
+              Sin checkpoints. Agrega pasos para estructurar esta tarea.
+            </p>
+          </div>
+
         </div>
+
+        <!-- Hidden inputs for checkpoint submission -->
+        <template x-for="(cp, idx) in checkpoints" :key="'h_' + cp._uid">
+          <span>
+            <input type="hidden" name="checklist_items" :value="cp.item">
+            <input type="hidden" name="checklist_ids" :value="cp.id || ''">
+          </span>
+        </template>
+
       </div>
 
       <div class="flex gap-3 pt-2">
@@ -90,6 +153,21 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+function taskFormData(initialCheckpoints, isRecurring) {
+  let uid = 0;
+  return {
+    recurring: isRecurring,
+    checkpoints: initialCheckpoints.map(cp => ({ ...cp, _uid: uid++ })),
+    addCheckpoint() {
+      this.checkpoints.push({ id: '', item: '', _uid: uid++ });
+    },
+    removeCheckpoint(idx) {
+      this.checkpoints.splice(idx, 1);
+    },
+  };
+}
+</script>
 <script>
 flatpickr('#id_due_date', {
   locale: 'es',
