@@ -4,6 +4,7 @@ Sistema de gestión operativa para NINDO Combat Center.
 
 ## Stack
 
+
 - **Backend**: Django 4.2 + SQLite (dev) / PostgreSQL (prod opcional)
 - **Frontend**: Django Templates + Tailwind CSS v4 + Alpine.js
 - **Notificaciones**: WhatsApp (Meta API / Twilio / Console)
